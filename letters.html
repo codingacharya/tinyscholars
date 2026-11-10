@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learn to Write Letters</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500&family=Noto+Sans+Telugu:wght@500&display=swap" rel="stylesheet">
+<script src="jquery.min.js"></script>
+<style>
+:root{--bg:#fff8e7;--card:#ffffff;--text:#2b2b44;--accent:#ff6b6b;--muted:#ece5d2;--guide:#d6d0bd;--ink:#3b6fd9;--line:#e4dcc6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b2e;--card:#2a2745;--text:#f4f1ff;--muted:#3d3a5c;--guide:#55507d;--ink:#8fb4ff;--line:#3d3a5c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1d1b2e;--card:#2a2745;--text:#f4f1ff;--muted:#3d3a5c;--guide:#55507d;--ink:#8fb4ff;--line:#3d3a5c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Trebuchet MS",system-ui,sans-serif;font-size:1.05rem}
+.container{max-width:560px;margin:0 auto;padding:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.col{flex:1 1 0;min-width:90px}
+.card{background:var(--card);border-radius:18px;padding:14px;box-shadow:0 3px 12px rgba(0,0,0,.12)}
+.btn{border:0;border-radius:14px;padding:10px 14px;font:inherit;font-weight:700;background:var(--muted);color:var(--text);cursor:pointer}
+.btn:active{transform:scale(.95)}
+.btn.active{background:var(--accent);color:#fff}
+.btn-orange{background:#ff9f1c;color:#2b2b44}
+h1{margin:4px 0 10px;font-size:1.7rem;text-align:center}
+#grid{margin:10px 0}
+#grid h3{margin:8px 0 4px;font-size:.95rem;opacity:.8}
+#grid .btn{min-width:44px;height:44px;padding:0;font-size:1.3rem;font-family:"Noto Sans Telugu","Noto Sans Devanagari","Nirmala UI",sans-serif}
+.pad{position:relative;width:100%;max-width:380px;aspect-ratio:1;margin:12px auto;background:var(--card);border-radius:20px;box-shadow:0 3px 12px rgba(0,0,0,.15)}
+.pad canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:20px}
+#ink{touch-action:none;cursor:crosshair}
+.off #guide{opacity:0}
+.hint{font-size:.98rem;line-height:1.45}
+label{display:flex;align-items:center;gap:6px;font-weight:700}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8fd3ff">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="container">
+  <h1>✏️ Learn to Write Letters</h1>
+  <div class="row" id="langs">
+    <button class="col btn active" data-l="en">English</button>
+    <button class="col btn" data-l="hi">हिन्दी</button>
+    <button class="col btn" data-l="te">తెలుగు</button>
+  </div>
+  <div id="grid"></div>
+  <div class="pad" id="pad">
+    <canvas id="guide" width="640" height="640"></canvas>
+    <canvas id="demo" width="640" height="640"></canvas>
+    <canvas id="ink" width="640" height="640"></canvas>
+  </div>
+  <div class="row" style="justify-content:center;align-items:center">
+    <button class="btn btn-orange" id="show">▶ Show me</button>
+    <button class="btn" id="clear">🧽 Clear</button>
+    <label><input type="checkbox" id="g" checked> Guide</label>
+  </div>
+  <div class="card hint" id="hint" style="margin-top:12px"></div>
+</div>
+<script>
+$(function(){
+  var S=640,P=80,U=4.8;
+  function X(v){return P+v*U;}
+  var EN={A:[[[10,90],[50,10],[90,90]],[[27,60],[73,60]]],
+  B:[[[20,10],[20,90]],[[20,10],[60,10],[75,25],[60,48],[20,50],[65,50],[82,70],[65,90],[20,90]]],
+  C:[[[85,22],[65,10],[40,12],[20,35],[18,65],[40,88],[65,90],[85,78]]],
+  D:[[[20,10],[20,90]],[[20,10],[55,12],[80,35],[80,65],[55,88],[20,90]]],
+  E:[[[80,10],[20,10],[20,90],[80,90]],[[20,50],[65,50]]],
+  F:[[[80,10],[20,10],[20,90]],[[20,50],[65,50]]],
+  G:[[[85,22],[65,10],[40,12],[20,35],[18,65],[40,88],[65,90],[82,75],[82,52],[55,52]]],
+  H:[[[20,10],[20,90]],[[80,10],[80,90]],[[20,50],[80,50]]],
+  I:[[[30,10],[70,10]],[[50,10],[50,90]],[[30,90],[70,90]]],
+  J:[[[35,10],[75,10]],[[60,10],[60,70],[50,88],[30,88],[20,72]]],
+  K:[[[20,10],[20,90]],[[80,10],[20,55]],[[38,40],[82,90]]],
+  L:[[[20,10],[20,90],[80,90]]],
+  M:[[[15,90],[15,10],[50,60],[85,10],[85,90]]],
+  N:[[[20,90],[20,10],[80,90],[80,10]]],
+  O:[[[50,8],[25,20],[15,50],[25,80],[50,92],[75,80],[85,50],[75,20],[50,8]]],
+  P:[[[20,10],[20,90]],[[20,10],[60,10],[78,25],[60,50],[20,52]]],
+  Q:[[[50,8],[25,20],[15,50],[25,80],[50,92],[75,80],[85,50],[75,20],[50,8]],[[55,65],[85,95]]],
+  R:[[[20,10],[20,90]],[[20,10],[60,10],[78,25],[60,50],[20,52]],[[50,52],[80,90]]],
+  S:[[[80,20],[60,8],[35,10],[22,28],[40,48],[65,58],[78,75],[62,90],[35,90],[18,78]]],
+  T:[[[15,10],[85,10]],[[50,10],[50,90]]],
+  U:[[[20,10],[20,65],[35,88],[65,88],[80,65],[80,10]]],
+  V:[[[12,10],[50,90],[88,10]]],
+  W:[[[8,10],[28,90],[50,35],[72,90],[92,10]]],
+  X:[[[15,10],[85,90]],[[85,10],[15,90]]],
+  Y:[[[15,10],[50,50]],[[85,10],[50,50],[50,90]]],
+  Z:[[[18,10],[82,10],[18,90],[82,90]]]};
+  var LANG={
+    en:{font:"'Trebuchet MS',Arial,sans-serif",groups:[["Capital letters","ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")],["Small letters","abcdefghijklmnopqrstuvwxyz".split("")]],
+      hint:"Start at the <b>green dot</b>, follow the numbers, and stop at the <b>red square</b>. Tap “Show me” to watch a capital letter being written. For small letters, trace over the grey letter."},
+    hi:{font:"'Noto Sans Devanagari','Nirmala UI',sans-serif",groups:[["Swar (vowels)","अ आ इ ई उ ऊ ए ऐ ओ औ".split(" ")],["Vyanjan (consonants)","क ख ग घ च छ ज झ ट ठ ड ढ ण त थ द ध न प फ ब भ म य र ल व श ष स ह".split(" ")]],
+      hint:"Trace the grey letter slowly. In Devanagari, write the letter’s body first, working left to right and top to bottom, and draw the top line (शिरोरेखा) <b>last</b>. Ask a teacher to show you the correct stroke order."},
+    te:{font:"'Noto Sans Telugu','Nirmala UI',sans-serif",groups:[["Achulu (vowels)","అ ఆ ఇ ఈ ఉ ఊ ఎ ఏ ఐ ఒ ఓ ఔ".split(" ")],["Hallulu (consonants)","క ఖ గ ఘ చ ఛ జ ఝ ట ఠ డ ఢ ణ త థ ద ధ న ప ఫ బ భ మ య ర ల వ శ ష స హ".split(" ")]],
+      hint:"Telugu letters have no top line. Trace the grey letter slowly, following its curves in one smooth flow. Stroke order can differ between schools, so check with a teacher. "}
+  };
+  var lang="en",ch="A",raf,tm,drawing=false,last,cur=null;
+  var g=$("#guide")[0].getContext("2d"),d=$("#demo")[0].getContext("2d"),ink=$("#ink")[0].getContext("2d");
+  function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+  function path(c,st){c.beginPath();$.each(st,function(i,p){i?c.lineTo(X(p[0]),X(p[1])):c.moveTo(X(p[0]),X(p[1]));});c.stroke();}
+  function clearInk(){cancelAnimationFrame(raf);clearTimeout(tm);d.clearRect(0,0,S,S);ink.clearRect(0,0,S,S);}
+  function render(){
+    clearInk();
+    var gc=css("--guide");
+    g.clearRect(0,0,S,S);
+    g.strokeStyle=css("--line");g.lineWidth=3;g.setLineDash([12,12]);
+    $.each([P,S/2,S-P],function(_,y){g.beginPath();g.moveTo(20,y);g.lineTo(S-20,y);g.stroke();});
+    g.setLineDash([]);
+    ink.strokeStyle=ink.fillStyle=css("--ink");ink.lineWidth=24;ink.lineCap=ink.lineJoin="round";
+    cur=null;var st=lang==="en"?EN[ch]:null;
+    if(st){
+      g.strokeStyle=gc;g.lineWidth=46;g.lineCap=g.lineJoin="round";
+      $.each(st,function(_,s){path(g,s);});
+      cur=st;markers(st);
+    } else {
+      var f=LANG[lang].font,mine=ch,sz=lang==="en"?420:380;
+      document.fonts.load("500 "+sz+"px "+f,ch).then(function(){
+        if(mine!==ch)return;
+        g.fillStyle=gc;g.font="500 "+sz+"px "+f;g.textAlign="center";g.textBaseline="alphabetic";
+        var m=g.measureText(ch);var asc=m.actualBoundingBoxAscent||sz*.7,dsc=m.actualBoundingBoxDescent||0;
+        g.fillText(ch,S/2,S/2+(asc-dsc)/2);
+      });
+    }
+    $("#show").toggle(!!cur);
+    $("#hint").html(LANG[lang].hint);
+  }
+  function markers(st){
+    $.each(st,function(i,s){var e=s[s.length-1];g.fillStyle="#e74c3c";g.fillRect(X(e[0])-11,X(e[1])-11,22,22);});
+    $.each(st,function(i,s){var a=s[0];g.fillStyle="#2ecc71";g.beginPath();g.arc(X(a[0]),X(a[1]),24,0,7);g.fill();
+      g.fillStyle="#fff";g.font="bold 28px sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillText(i+1,X(a[0]),X(a[1])+1);});
+  }
+  function thin(a,N){
+    var chg=true,i,x,y,s,del,k;
+    while(chg){chg=false;
+      for(s=0;s<2;s++){del=[];
+        for(y=1;y<N-1;y++)for(x=1;x<N-1;x++){i=y*N+x;if(!a[i])continue;
+          var p2=a[i-N],p3=a[i-N+1],p4=a[i+1],p5=a[i+N+1],p6=a[i+N],p7=a[i+N-1],p8=a[i-1],p9=a[i-N-1];
+          var B=p2+p3+p4+p5+p6+p7+p8+p9;if(B<2||B>6)continue;
+          var A=(!p2&&p3)+(!p3&&p4)+(!p4&&p5)+(!p5&&p6)+(!p6&&p7)+(!p7&&p8)+(!p8&&p9)+(!p9&&p2);
+          if(A!==1)continue;
+          if(s?(p2*p4*p8||p2*p6*p8):(p2*p4*p6||p4*p6*p8))continue;
+          del.push(i);}
+        for(k=0;k<del.length;k++)a[del[k]]=0;
+        if(del.length)chg=true;}}
+  }
+  // Suggested stroke order worked out from the letter's shape (not verified data)
+  function auto(f,sz,yy){
+    var N=160,c=document.createElement("canvas");c.width=c.height=N;var o=c.getContext("2d");
+    o.setTransform(N/S,0,0,N/S,0,0);o.fillStyle="#000";o.font="500 "+sz+"px "+f;o.textAlign="center";o.textBaseline="alphabetic";o.fillText(ch,S/2,yy);
+    var px=o.getImageData(0,0,N,N).data,a=new Uint8Array(N*N),i,x,y2;
+    for(i=0;i<a.length;i++)a[i]=px[i*4+3]>128?1:0;
+    thin(a,N);
+    var minX=N,maxX=0,minY=N,maxY=0,L=[];
+    for(i=0;i<a.length;i++)if(a[i]){x=i%N;y2=(i/N)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y2);maxY=Math.max(maxY,y2);}
+    if(maxX<minX)return [];
+    var line=null;
+    if(lang==="hi"){
+      var best=0,by=0,cnt;
+      for(y2=minY;y2<=minY+(maxY-minY)*.35;y2++){cnt=0;for(x=minX;x<=maxX;x++)cnt+=a[y2*N+x];if(cnt>best){best=cnt;by=y2;}}
+      if(best>(maxX-minX)*.5){
+        var lx=N,rx=0;
+        for(y2=by-1;y2<=by+1;y2++)for(x=minX;x<=maxX;x++)if(a[y2*N+x]){lx=Math.min(lx,x);rx=Math.max(rx,x);a[y2*N+x]=0;}
+        line=[[lx,by],[rx,by]];
+      }
+    }
+    for(i=0;i<a.length;i++)if(a[i])L.push(i);
+    function key(i){return ((i/N)|0)*.8+i%N;}
+    var vis={};
+    function nb(i,all){var r=[],cx=i%N,cy=(i/N)|0;for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){var j=(cy+dy)*N+cx+dx;if((dx||dy)&&a[j]&&(all||!vis[j]))r.push(j);}return r;}
+    var ends=L.filter(function(i){return nb(i,1).length===1;}).sort(function(p,q){return key(p)-key(q);});
+    L.sort(function(p,q){return key(p)-key(q);});
+    var out=[];
+    $.each(ends.concat(L),function(_,s){
+      if(vis[s])return;
+      var p=[s],c2=s,prev=-1;vis[s]=1;
+      for(;;){
+        var cs=nb(c2);if(!cs.length)break;
+        var b2=cs[0];
+        if(prev>=0&&cs.length>1){var dx0=c2%N-prev%N,dy0=((c2/N)|0)-((prev/N)|0),bs=-99;
+          $.each(cs,function(_,j){var sc=(j%N-c2%N)*dx0+(((j/N)|0)-((c2/N)|0))*dy0;if(sc>bs){bs=sc;b2=j;}});}
+        prev=c2;c2=b2;vis[c2]=1;p.push(c2);
+      }
+      if(p.length<7)return;
+      var q=[];for(var k=0;k<p.length;k+=3)q.push(p[k]);if((p.length-1)%3)q.push(p[p.length-1]);
+      out.push($.map(q,function(i){return [[(i%N*S/N-P)/U,(((i/N)|0)*S/N-P)/U]];}));
+    });
+    if(line)out.push($.map(line,function(p){return [[(p[0]*S/N-P)/U,(p[1]*S/N-P)/U]];}));
+    return out;
+  }
+  function dense(st){var pts=[];for(var i=0;i<st.length-1;i++){var a=st[i],b=st[i+1],n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/1.2));for(var k=0;k<n;k++)pts.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]);}pts.push(st[st.length-1]);return pts;}
+  function demo(){
+    var st=cur;if(!st||!st.length)return;
+    clearInk();
+    var paths=$.map(st,function(s){return [dense(s)];}),si=0,pi=0;
+    d.strokeStyle="#ff9f1c";d.lineWidth=22;d.lineCap=d.lineJoin="round";
+    function step(){
+      var p=paths[si];
+      for(var j=0;j<2&&pi<p.length;j++,pi++){if(pi>0){d.beginPath();d.moveTo(X(p[pi-1][0]),X(p[pi-1][1]));d.lineTo(X(p[pi][0]),X(p[pi][1]));d.stroke();}}
+      if(pi>=p.length){si++;pi=0;if(si<paths.length)tm=setTimeout(function(){raf=requestAnimationFrame(step);},350);}
+      else raf=requestAnimationFrame(step);
+    }
+    step();
+  }
+  function buildGrid(){
+    var $g=$("#grid").empty();
+    $.each(LANG[lang].groups,function(_,grp){
+      $g.append($("<h3>").text(grp[0]));
+      var $r=$("<div class='row'>").appendTo($g);
+      $.each(grp[1],function(_,c){$("<button class='btn'>").text(c).attr("data-c",c).toggleClass("active",c===ch).appendTo($r);});
+    });
+  }
+  function pos(e){var r=$("#ink")[0].getBoundingClientRect();return{x:(e.clientX-r.left)*S/r.width,y:(e.clientY-r.top)*S/r.height};}
+  $("#ink").on("pointerdown",function(e){e=e.originalEvent;this.setPointerCapture(e.pointerId);drawing=true;last=pos(e);ink.beginPath();ink.arc(last.x,last.y,12,0,7);ink.fill();})
+  .on("pointermove",function(e){if(!drawing)return;var p=pos(e.originalEvent);ink.beginPath();ink.moveTo(last.x,last.y);ink.lineTo(p.x,p.y);ink.stroke();last=p;})
+  .on("pointerup pointercancel",function(){drawing=false;});
+  $("#langs").on("click","button",function(){
+    $("#langs button").removeClass("active");$(this).addClass("active");
+    lang=$(this).data("l");ch=LANG[lang].groups[0][1][0];buildGrid();render();
+  });
+  $("#grid").on("click","button",function(){ch=$(this).attr("data-c");$("#grid button").removeClass("active");$(this).addClass("active");render();});
+  $("#clear").on("click",clearInk);
+  $("#show").on("click",demo);
+  $("#g").on("change",function(){$("#pad").toggleClass("off",!this.checked);});
+  buildGrid();render();
+});
+</script>
+<a href="index.html" id="homeFab" aria-label="Home" style="position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;width:56px;height:56px;border-radius:50%;background:#fff;color:#23324a;font-size:1.8rem;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.3)">🏠</a>
+</body>
+</html>
