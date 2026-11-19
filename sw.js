@@ -1,9 +1,9 @@
 // Tiny Scholars service worker: every game opens offline after the first visit.
 // When you change any file, bump the version (v1 -> v2) so phones refresh their saved copy.
-const CACHE = "tiny-scholars-v2";
+const CACHE = "tiny-scholars-v3";
 const FILES = [
   "./", "index.html", "math.html", "letters.html", "science.html",
-  "puzzles.html", "stories.html", "world.html",
+  "puzzles.html", "stories.html", "world.html", "abacus.html", "games.html",
   "jquery.min.js", "manifest.json", "icon-192.png", "icon-512.png"
 ];
 
